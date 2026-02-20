@@ -1,11 +1,13 @@
 import { useState } from "react";
 import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,9 +15,16 @@ function Login() {
     try {
       const res = await API.post("/auth/login", { email, password });
 
-localStorage.setItem("token", res.data.token);
+      localStorage.setItem("token", res.data.token);
 
-navigate("/");
+      // 🔥 Immediately set user in context
+      setUser({
+        _id: res.data._id,
+        name: res.data.name,
+        email: res.data.email,
+      });
+
+      navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Login failed");
     }
@@ -34,7 +43,7 @@ navigate("/");
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg"
             required
           />
 
@@ -43,24 +52,18 @@ navigate("/");
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg"
             required
           />
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
+          <button className="w-full bg-blue-600 text-white py-2 rounded-lg">
             Login
           </button>
         </form>
 
-        <p className="text-center mt-4 text-sm text-gray-600">
+        <p className="text-center mt-4 text-sm">
           Don’t have an account?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 hover:underline"
-          >
+          <Link to="/register" className="text-blue-600">
             Register
           </Link>
         </p>

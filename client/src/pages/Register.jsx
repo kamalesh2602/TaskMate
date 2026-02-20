@@ -20,6 +20,13 @@ function Register() {
 
 localStorage.setItem("token", res.data.token);
 
+
+setUser({
+  _id: res.data._id,
+  name: res.data.name,
+  email: res.data.email,
+});
+
 navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Register failed");
