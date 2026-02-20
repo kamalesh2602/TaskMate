@@ -1,0 +1,16 @@
+TaskMate – MERN Todo App
+
+TaskMate is a full stack Todo application built using the MERN stack.
+It includes user authentication and user-specific task management.
+
+Features
+1.User Registration and Login
+2.JWT-based Authentication
+3.Protected Routes
+4.Create, Read, Update, Delete Todos
+5.User-specific task storage
+6.Fully deployed (Frontend + Backend + Database)
+
+
+Author
+Kamalesh G
