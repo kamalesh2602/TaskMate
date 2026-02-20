@@ -11,8 +11,11 @@ function Login() {
     e.preventDefault();
 
     try {
-      await API.post("/auth/login", { email, password });
-      navigate("/");
+      const res = await API.post("/auth/login", { email, password });
+
+localStorage.setItem("token", res.data.token);
+
+navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Login failed");
     }

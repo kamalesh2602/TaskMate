@@ -44,11 +44,11 @@ function Dashboard() {
     setTodos(todos.filter((todo) => todo._id !== id));
   };
 
-  const handleLogout = async () => {
-    await API.post("/auth/logout");
-    setUser(null);
-    navigate("/login");
-  };
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  setUser(null);
+  navigate("/login");
+};
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-6">

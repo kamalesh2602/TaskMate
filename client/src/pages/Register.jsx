@@ -12,12 +12,15 @@ function Register() {
     e.preventDefault();
 
     try {
-      await API.post("/auth/register", {
-        name,
-        email,
-        password,
-      });
-      navigate("/");
+      const res = await API.post("/auth/register", {
+  name,
+  email,
+  password,
+});
+
+localStorage.setItem("token", res.data.token);
+
+navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Register failed");
     }
