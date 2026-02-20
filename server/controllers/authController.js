@@ -34,13 +34,12 @@ exports.registerUser = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    const isProduction = process.env.NODE_ENV === "production";
-
+    // 🔥 FORCE production-safe cookie settings
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
+        secure: true,          // MUST be true for HTTPS
+        sameSite: "none",      // MUST be none for cross-domain
       })
       .status(201)
       .json({
@@ -70,13 +69,12 @@ exports.loginUser = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    const isProduction = process.env.NODE_ENV === "production";
-
+    // 🔥 FORCE production-safe cookie settings
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
+        secure: true,
+        sameSite: "none",
       })
       .json({
         _id: user._id,
@@ -90,13 +88,11 @@ exports.loginUser = async (req, res) => {
 
 // Logout
 exports.logoutUser = async (req, res) => {
-  const isProduction = process.env.NODE_ENV === "production";
-
   res
     .cookie("token", "", {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       expires: new Date(0),
     })
     .json({ message: "Logged out successfully" });
