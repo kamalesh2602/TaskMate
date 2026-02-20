@@ -14,7 +14,7 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://wonderful-mochi-728517.netlify.app",
+  "https://taskmategk.netlify.app",
 ];
 
 app.use(
