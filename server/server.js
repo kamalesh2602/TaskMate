@@ -20,8 +20,10 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true,
+    origin: [
+      "http://localhost:5173",
+      "https://taskmategk.netlify.app",
+    ],
   })
 );
 
