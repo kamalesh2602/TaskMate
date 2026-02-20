@@ -11,9 +11,15 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://your-frontend-domain.vercel.app", // change later
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -23,6 +29,13 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
+
+// Routes
+const authRoutes = require("./routes/authRoutes");
+const todoRoutes = require("./routes/todoRoutes");
+
+app.use("/api/auth", authRoutes);
+app.use("/api/todos", todoRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
