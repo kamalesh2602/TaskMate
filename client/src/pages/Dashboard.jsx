@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -6,10 +6,14 @@ import { useNavigate } from "react-router-dom";
 function Dashboard() {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
+
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editingId, setEditingId] = useState(null);
+
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all"); // all | completed | pending
 
   const fetchTodos = async () => {
     const res = await API.get("/todos");
@@ -79,10 +83,28 @@ function Dashboard() {
     navigate("/login");
   };
 
+  // 🔥 FILTER + SEARCH LOGIC
+  const filteredTodos = useMemo(() => {
+    return todos
+      .filter((todo) => {
+        if (filter === "completed") return todo.completed;
+        if (filter === "pending") return !todo.completed;
+        return true;
+      })
+      .filter((todo) =>
+        todo.title.toLowerCase().includes(search.toLowerCase()) ||
+        (todo.description &&
+          todo.description
+            .toLowerCase()
+            .includes(search.toLowerCase()))
+      );
+  }, [todos, filter, search]);
+
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-6">
       <div className="bg-white w-full max-w-xl p-6 rounded-xl shadow-lg">
 
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">
             Welcome, {user?.name}
@@ -96,6 +118,7 @@ function Dashboard() {
           </button>
         </div>
 
+        {/* Add / Edit Form */}
         <form onSubmit={addOrUpdateTodo} className="mb-6 space-y-2">
           <input
             type="text"
@@ -117,8 +140,54 @@ function Dashboard() {
           </button>
         </form>
 
+        {/* 🔍 Search */}
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full border p-2 rounded mb-4"
+        />
+
+        {/* ✅ Filter Buttons */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-3 py-1 rounded ${
+              filter === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+            }`}
+          >
+            All
+          </button>
+
+          <button
+            onClick={() => setFilter("completed")}
+            className={`px-3 py-1 rounded ${
+              filter === "completed"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+            }`}
+          >
+            Completed
+          </button>
+
+          <button
+            onClick={() => setFilter("pending")}
+            className={`px-3 py-1 rounded ${
+              filter === "pending"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+            }`}
+          >
+            Pending
+          </button>
+        </div>
+
+        {/* Todo List */}
         <ul className="space-y-3">
-          {todos.map((todo) => (
+          {filteredTodos.map((todo) => (
             <li
               key={todo._id}
               className="bg-gray-50 p-3 rounded"
