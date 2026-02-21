@@ -3,15 +3,15 @@ const Todo = require("../models/Todo");
 // Create Todo
 exports.createTodo = async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, description } = req.body;
 
-    if (!title) {
+    if (!title)
       return res.status(400).json({ message: "Title is required" });
-    }
 
     const todo = await Todo.create({
       user: req.user._id,
       title,
+      description,
     });
 
     res.status(201).json(todo);
@@ -20,7 +20,7 @@ exports.createTodo = async (req, res) => {
   }
 };
 
-// Get All Todos (for logged-in user only)
+// Get Todos
 exports.getTodos = async (req, res) => {
   try {
     const todos = await Todo.find({ user: req.user._id }).sort({
@@ -36,20 +36,19 @@ exports.getTodos = async (req, res) => {
 // Update Todo
 exports.updateTodo = async (req, res) => {
   try {
+    const { title, description, completed } = req.body;
+
     const todo = await Todo.findOne({
       _id: req.params.id,
       user: req.user._id,
     });
 
-    if (!todo) {
+    if (!todo)
       return res.status(404).json({ message: "Todo not found" });
-    }
 
-    todo.title = req.body.title ?? todo.title;
-    todo.completed =
-      req.body.completed !== undefined
-        ? req.body.completed
-        : todo.completed;
+    if (title !== undefined) todo.title = title;
+    if (description !== undefined) todo.description = description;
+    if (completed !== undefined) todo.completed = completed;
 
     const updated = await todo.save();
 
@@ -67,9 +66,8 @@ exports.deleteTodo = async (req, res) => {
       user: req.user._id,
     });
 
-    if (!todo) {
+    if (!todo)
       return res.status(404).json({ message: "Todo not found" });
-    }
 
     res.status(200).json({ message: "Todo deleted" });
   } catch (error) {
