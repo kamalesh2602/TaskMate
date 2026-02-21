@@ -8,6 +8,8 @@ function Dashboard() {
   const navigate = useNavigate();
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [editingId, setEditingId] = useState(null);
 
   const fetchTodos = async () => {
     const res = await API.get("/todos");
@@ -18,13 +20,40 @@ function Dashboard() {
     fetchTodos();
   }, []);
 
-  const addTodo = async (e) => {
+  const addOrUpdateTodo = async (e) => {
     e.preventDefault();
     if (!title) return;
 
-    const res = await API.post("/todos", { title });
-    setTodos([res.data, ...todos]);
+    if (editingId) {
+      const res = await API.put(`/todos/${editingId}`, {
+        title,
+        description,
+      });
+
+      setTodos(
+        todos.map((todo) =>
+          todo._id === editingId ? res.data : todo
+        )
+      );
+
+      setEditingId(null);
+    } else {
+      const res = await API.post("/todos", {
+        title,
+        description,
+      });
+
+      setTodos([res.data, ...todos]);
+    }
+
     setTitle("");
+    setDescription("");
+  };
+
+  const editTodo = (todo) => {
+    setEditingId(todo._id);
+    setTitle(todo.title);
+    setDescription(todo.description || "");
   };
 
   const toggleTodo = async (id, completed) => {
@@ -45,72 +74,97 @@ function Dashboard() {
   };
 
   const handleLogout = () => {
-  localStorage.removeItem("token");
-  setUser(null);
-  navigate("/login");
-};
+    localStorage.removeItem("token");
+    setUser(null);
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-6">
       <div className="bg-white w-full max-w-xl p-6 rounded-xl shadow-lg">
 
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold">
             Welcome, {user?.name}
           </h2>
 
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-1 rounded-lg hover:bg-red-600 transition"
+            className="bg-red-500 text-white px-3 py-1 rounded"
           >
             Logout
           </button>
         </div>
 
-        {/* Add Todo */}
-        <form onSubmit={addTodo} className="flex gap-2 mb-6">
+        <form onSubmit={addOrUpdateTodo} className="mb-6 space-y-2">
           <input
             type="text"
-            placeholder="Add new task..."
+            placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border p-2 rounded"
           />
-          <button className="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700 transition">
-            Add
+
+          <textarea
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full border p-2 rounded"
+          />
+
+          <button className="bg-blue-600 text-white px-4 py-2 rounded">
+            {editingId ? "Update Task" : "Add Task"}
           </button>
         </form>
 
-        {/* Todo List */}
         <ul className="space-y-3">
           {todos.map((todo) => (
             <li
               key={todo._id}
-              className="flex justify-between items-center bg-gray-50 px-4 py-2 rounded-lg"
+              className="bg-gray-50 p-3 rounded"
             >
-              <span
-                onClick={() =>
-                  toggleTodo(todo._id, todo.completed)
-                }
-                className={`cursor-pointer ${
-                  todo.completed
-                    ? "line-through text-gray-400"
-                    : "text-gray-800"
-                }`}
-              >
-                {todo.title}
-              </span>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3
+                    onClick={() =>
+                      toggleTodo(todo._id, todo.completed)
+                    }
+                    className={`font-semibold cursor-pointer ${
+                      todo.completed
+                        ? "line-through text-gray-400"
+                        : ""
+                    }`}
+                  >
+                    {todo.title}
+                  </h3>
 
-              <button
-                onClick={() => deleteTodo(todo._id)}
-                className="text-red-500 hover:text-red-700"
-              >
-                Delete
-              </button>
+                  {todo.description && (
+                    <p className="text-sm text-gray-600">
+                      {todo.description}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-x-2">
+                  <button
+                    onClick={() => editTodo(todo)}
+                    className="text-blue-500"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteTodo(todo._id)}
+                    className="text-red-500"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
+
       </div>
     </div>
   );
